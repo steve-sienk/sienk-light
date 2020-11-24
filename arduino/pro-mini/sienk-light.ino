@@ -2,6 +2,8 @@
   Steve Sienkowski
 
   Built for the OSEPP Color Sensor and an Arduino Pro Mini.
+
+  Transistor help: https://create.arduino.cc/projecthub/105448/simple-npn-transistor-switch-control-with-cooling-fan-499f90
   
   This code borrows from Rui Santos(https://randomnerdtutorials.com) and Adafruit example code.
   Visit https://github.com/steve-sienk/sienk-light for the latest code.
