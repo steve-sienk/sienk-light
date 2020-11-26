@@ -14,14 +14,14 @@
 #include <avr/power.h>
 #endif
 
-#define RED_MAX 615
-#define RED_NONE 1800
+#define RED_MAX 540
+#define RED_NONE 1600
 
-#define BLUE_MAX 650
+#define BLUE_MAX 550
 #define BLUE_NONE 1430
 
-#define GREEN_MAX 850
-#define GREEN_NONE 2500
+#define GREEN_MAX 800
+#define GREEN_NONE 2050
 
 #define enableColorSensor_pin 14
 // TCS230 or TCS3200 pins wiring to Arduino
@@ -138,9 +138,9 @@ void paintGammaRing() {
 
 void paintBlack() {
   colorWipeQuad(
-    strip.Color(0x6, 0, 0x6, 0), 
-    strip.Color(0, 7, 0, 0),
-    strip.Color(0, 0, 0x6, 0),
+    strip.Color(0x7, 0, 0x7, 0), 
+    strip.Color(0, 0x7, 0, 0),
+    strip.Color(0, 0, 0x7, 0),
     strip.Color(0, 0, 0, 0),
     100);
 }
@@ -196,6 +196,22 @@ void senseColor() {
   redFrequency = redFrequency/1.051;
   greenFrequency = greenFrequency/1.0157;
   blueFrequency = blueFrequency/1.114;
+    
+  red = scaleFrequency(redFrequency, RED_MAX, RED_NONE);
+  green = scaleFrequency(greenFrequency, GREEN_MAX, GREEN_NONE);
+  blue = scaleFrequency(blueFrequency, BLUE_MAX, BLUE_NONE);
+  white = 0;
+
+  gamma_red = gammatable[red];
+  gamma_green = gammatable[green];
+  gamma_blue = gammatable[blue];
+  
+//  red = map(red, RED_MAX, RED_NONE, 0, 255);
+//  blue = map(blue, RED_MAX, RED_NONE, 0, 255);
+//  green = map(green, RED_MAX, RED_NONE, 0, 255);
+}
+
+void printColors(){
   Serial.println("====Normalized Frequency Counts===");
   // countR=counter/1.051; countG=counter/1.0157;     countB=counter/1.114;
   Serial.print(" R = ");
@@ -204,26 +220,13 @@ void senseColor() {
   Serial.print(greenFrequency);
   Serial.print(" B = ");
   Serial.println(blueFrequency);
-    
-//  red = map(red, RED_MAX, RED_NONE, 0, 255);
-//  blue = map(blue, RED_MAX, RED_NONE, 0, 255);
-//  green = map(green, RED_MAX, RED_NONE, 0, 255);
-  red = scaleFrequency(redFrequency, RED_MAX, RED_NONE);
-  green = scaleFrequency(greenFrequency, GREEN_MAX, GREEN_NONE);
-  blue = scaleFrequency(blueFrequency, BLUE_MAX, BLUE_NONE);
-  white = 0;
-
-  delay(50);
+  
   Serial.println("====Scaled Color Frequency===");
   sprintf(mystring, "%06X", int32_t(red<<16 | green<<8 | blue));
   Serial.print(" R = 0x"); Serial.print(red, HEX);
   Serial.print(" G = 0x"); Serial.print(green, HEX);
   Serial.print(" B = 0x"); Serial.print(blue, HEX);
   Serial.println("");
-
-  gamma_red = gammatable[red];
-  gamma_green = gammatable[green];
-  gamma_blue = gammatable[blue];
   
   Serial.println("====Gamma Color===");
   Serial.print("RGB: 0x");
@@ -251,14 +254,18 @@ void setup() {
   pinMode(enableFreq, OUTPUT);
   pinMode(sensorOut, INPUT);
 
-  Serial.begin(9600);
-
   setupLights();
   writeGammaTable();
     
   enableColorSensor();
   senseColor();
   disableColorSensor();
+
+  delay(500);
+  Serial.begin(9600);
+  delay(1500);
+  printColors();
+  Serial.end();
 }
 
 int loop_count=0;
