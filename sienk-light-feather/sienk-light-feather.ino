@@ -10,6 +10,8 @@
 *********/
 
 #include <Adafruit_NeoPixel.h>
+#include "Adafruit_VL53L0X.h"
+
 #ifdef __AVR__
 #include <avr/power.h>
 #endif
@@ -33,6 +35,7 @@
 #define enableFreq 5
 #define ledRing 13
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(20, ledRing, NEO_GRBW + NEO_KHZ800);
+Adafruit_VL53L0X lox = Adafruit_VL53L0X();
 
 int redFrequency = 0, greenFrequency = 0, blueFrequency = 0;
 int red, green, blue, white, gamma_red, gamma_green, gamma_blue;
@@ -133,16 +136,16 @@ void paintGammaRing() {
 
   ////uncomment the line below for simple color balancing on RGBW LEDs
   balance = min(min(r, g), b);  
-  colorWipe(strip.Color(r-balance, g-balance, b-balance, balance), 200); // White RGBW  
+  colorWipe(strip.Color(r-balance, g-balance, b-balance, balance), 75); // White RGBW  
 }
 
 void paintBlack() {
   colorWipeQuad(
     strip.Color(0x7, 0, 0x7, 0), 
     strip.Color(0, 0x7, 0, 0),
-    strip.Color(0, 0, 0x7, 0),
+    strip.Color(0, 0x7, 0x7, 0),
     strip.Color(0, 0, 0, 0),
-    100);
+    75);
 }
 
 int scaleFrequency(int freq, int f_max, int f_none) {
@@ -242,7 +245,6 @@ void printColors(){
 void setupLights() {
   strip.begin();
   strip.setBrightness(100);
-  colorWipe(strip.Color(0, 0, 0, 0), 0);
 }
 
 void setup() {
@@ -256,25 +258,75 @@ void setup() {
 
   setupLights();
   writeGammaTable();
+
+  Serial.begin(115200);
+//  while (! Serial) {
+//    delay(1);
+//  }
+  delay(50);
+
+  getColor();
+
+//  Serial.println("Adafruit VL53L0X test");
+  if (!lox.begin()) {
+    Serial.println(F("Failed to boot VL53L0X"));
+    while(1);
+  }
+  lox.configSensor(lox.VL53L0X_SENSE_LONG_RANGE);
+  // power
+  Serial.println(F("VL53L0X API Simple Ranging example\n\n"));
+
+//  delay(500);
+//  Serial.begin(9600);
+//  delay(1500);
+//  printColors();
+//  Serial.end();
+  delay(50);
+}
+
+int loop_count=0;
+int near_count = 0;
+
+void getDistance() {
+  VL53L0X_RangingMeasurementData_t measure;
     
+  Serial.print("Reading a measurement... ");
+  lox.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
+
+  if (measure.RangeStatus != 4) {  // phase failures have incorrect data
+    Serial.print(measure.RangeStatus);
+    Serial.print(", Distance (mm): "); Serial.println(measure.RangeMilliMeter);
+  } else {
+    Serial.println(" out of range ");
+  }
+  if(measure.RangeStatus == 0 && measure.RangeMilliMeter < 80) {
+    near_count++;
+  } else {
+    near_count = 0;
+  }
+  if(near_count == 3) {
+    // Debounce
+    getColor();
+    loop_count = 0;
+    near_count = -5;
+  }
+}
+
+void getColor() {
+  Serial.println("Sensing color.");
+  colorWipe(strip.Color(0, 0, 0, 0), 0);
   enableColorSensor();
   senseColor();
   disableColorSensor();
 
-  delay(500);
-  Serial.begin(9600);
-  delay(1500);
   printColors();
-  Serial.end();
 }
 
-int loop_count=0;
 void loop() {
   // do nothing
-  delay(1000);
   
-  if(loop_count % 30 == 0) {
-    // every 30 seconds, repaint it
+  if(loop_count % 200 == 0) {
+    // every 20 seconds, repaint it
     if(gamma_red <= 2 && gamma_blue <= 2 && gamma_green <= 2) {
       // on full power, the minimum value for an LED is 2.
       paintBlack();
@@ -283,4 +335,7 @@ void loop() {
     }
   }
   loop_count++;
+
+  getDistance();
+  delay(100);
 }
