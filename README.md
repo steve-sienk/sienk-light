@@ -14,10 +14,10 @@ A flashlight that synchronizes to the color of something.
 ## Overview:
 This project uses some basic parts I had lying around:
 - An arduino
-  - because arduinos are easy to work with and don't consume much power
+  - because arduinos are easy to work with and don't consume much power.
 - A distance sensor 
-  - to determine when something is nearby and scan its color
-  - it wasn't strictly necessary, though my brother said "make it scan in real-time!", so I did. He's right, it's cooler.
+  - to determine when something is nearby.
+  - (It wasn't strictly necessary, though my brother said "make it scan in real-time!", and so I did. He's right, it's way cooler.)
 - A color sensor
   - to find the color.
 - An LED ring
@@ -27,7 +27,7 @@ This project uses some basic parts I had lying around:
 - An old flashlight
   - something to put it all in.
 - A transistor (you might not need this).
-  - I used one because my color sensor wasn't turning on and off as I expected. I thought it was a power issue -- though looking back, I think the real issue I had was two different things (NeoPixels and a color sensor control wire) mapped to a single output pin on the arduino, oops.
+  - I used one because my color sensor wasn't turning on and off as I expected. I thought it was a power issue -- though looking back, I think the real issue I had was two different things mapped to a single output pin on the arduino (some old NeoPixel code, and a color sensor control wire), oops.
 
 ### My Parts
 - Adafruit [Feather M4 Express](https://learn.adafruit.com/adafruit-feather-m4-express-atsamd51) 
@@ -40,5 +40,6 @@ This project uses some basic parts I had lying around:
   - It's been a while since my college's electronics lab, and I found [this guide](https://create.arduino.cc/projecthub/105448/simple-npn-transistor-switch-control-with-cooling-fan-499f90) helpful in wiring things up.
 
 ## More pictures!
-
-
+| !  |  ! | ! |
+:-------------------------:|:-------------------------:|:-------------------------:
+![Sienk Light](/sienk-light.jpeg) | ![Top View](/top.jpeg) | ![Ready](/ready-to-scan.jpeg)
